@@ -42,7 +42,6 @@ module "ec2" {
   alb_security_group_id = module.alb.alb_security_group_id
   instance_profile_name  = module.iam.instance_profile_name
   instance_type = var.instance_type
-
   db_host     = module.rds.db_endpoint
   db_name     = var.db_name
   db_username = var.db_username
