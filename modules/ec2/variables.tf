@@ -18,10 +18,6 @@ variable "instance_type" {
   type = string
 }
 
-variable "key_name" {
-  type = string
-}
-
 
 variable "db_host" {
   type = string
@@ -50,6 +46,3 @@ variable "db_password" {
   sensitive = true
 }
 
-variable "public_key_path" {
-  type = string
-}

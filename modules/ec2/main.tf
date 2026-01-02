@@ -36,7 +36,6 @@ resource "aws_instance" "app" {
   count         = length(var.subnet_ids)
   ami           = data.aws_ami.amazon_linux.id
   instance_type = var.instance_type
-  key_name      = var.key_name
   subnet_id     = var.subnet_ids[count.index]
 
   vpc_security_group_ids = [
@@ -48,7 +47,7 @@ resource "aws_instance" "app" {
   user_data = templatefile("${path.module}/user_data.sh", {
     db_host     = var.db_host
     db_name     = var.db_name
-    db_username     = var.db_username
+    db_username = var.db_username
     db_password = var.db_password
     domain_name = var.domain_name
   })
@@ -56,17 +55,6 @@ resource "aws_instance" "app" {
   tags = {
     Name = "wp-${var.environment}-app-${count.index + 1}"
   }
-
-  depends_on = [
-    aws_key_pair.this
-  ]
 }
 
-resource "aws_key_pair" "this" {
-  key_name   = var.key_name
-  public_key = file(var.public_key_path)
-
-  tags = {
-    Name = "wp-${var.environment}-key"
-  }
-}
+##
