@@ -79,13 +79,6 @@ variable "instance_type" {
   type = string
 }
 
-variable "key_name" {
-  default = "wp-prod-key"
-}
-
-variable "public_key_path" {
-  default = "~/.ssh/wp-prod-key.pub"
-}
 
 ######ACM########
 variable "domain_name" {
