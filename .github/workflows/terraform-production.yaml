@@ -1,0 +1,34 @@
+name: Terraform Production
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "modules/**"
+      - "envs/production/**"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN_PROD }}
+          aws-region: us-east-1
+
+      - name: Terraform Init
+        run: terraform init
+        working-directory: envs/production
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve
+        working-directory: envs/production

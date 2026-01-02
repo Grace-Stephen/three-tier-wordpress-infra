@@ -1,0 +1,71 @@
+# --- Terraform ---
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+terraform.tfvars
+
+
+# Terraform plan files
+*.tfplan
+crash.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# --- Local environment ---
+.env
+.env.*
+*.log
+
+# VS Code
+.vscode/
+.settings/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Archives
+*.tar
+*.gz
+*.tgz
+*.bak
+
+# Terraform CLI config
+.terraformrc
+terraform.rc
+
+
+############################
+# SSH Keys
+############################
+
+*.pem
+*.key
+*.pub
+id_rsa
+id_rsa.pub
+wp-*-key
+wp-*-key.pub
+
+############################
+# Environment / Secrets
+############################
+
+.env
+.env.*
+*.secret
+*.secrets
+*.vars
+
+
+############################
+# WordPress (if ever cloned locally)
+############################
+
+wp-config.php
+wp-content/uploads/
+wp-content/cache/
+wp-content/upgrade/
