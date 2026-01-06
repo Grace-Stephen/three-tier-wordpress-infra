@@ -66,3 +66,12 @@ module "acm" {
   subject_alternative_names = var.subject_alternative_names
 }
 
+module "cloudwatch" {
+  source = "../../modules/cloudwatch"
+
+  environment               = var.environment
+  ec2_instance_ids          = module.ec2.instance_ids
+  alb_arn_suffix            = module.alb.alb_arn_suffix
+  target_group_arn_suffix   = module.alb.target_group_arn_suffix
+  rds_instance_identifier   = module.rds.db_instance_identifier
+}
