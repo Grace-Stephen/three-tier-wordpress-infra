@@ -89,31 +89,30 @@ variable "subject_alternative_names" {
 }
 
 ######CLOUDWATCH#######
-variable "ec2_instance_ids" {
-  type    = list(string)
-  default = []
-}
+# variable "instance_ids" {
+#   type    = list(string)
+# }
 
 
-variable "rds_instance_identifier" {
-  type = string
-}
+# variable "db_instance_identifier" {
+#   type = string
+# }
 
-variable "cpu_utilization_threshold" {
-  description = "CPU utilization percentage that triggers alarm"
-  type        = number
-  default     = 80
-}
+# variable "cpu_utilization_threshold" {
+#   description = "CPU utilization percentage that triggers alarm"
+#   type        = number
+#   default     = 80
+# }
 
-variable "alarm_evaluation_periods" {
-  description = "Number of periods to evaluate before triggering alarm"
-  type        = number
-  default     = 2
-}
+# variable "alarm_evaluation_periods" {
+#   description = "Number of periods to evaluate before triggering alarm"
+#   type        = number
+#   default     = 2
+# }
 
-variable "alarm_period" {
-  description = "Period (in seconds) over which the metric is evaluated"
-  type        = number
-  default     = 300
-}
+# variable "alarm_period" {
+#   description = "Period (in seconds) over which the metric is evaluated"
+#   type        = number
+#   default     = 300
+# }
 
