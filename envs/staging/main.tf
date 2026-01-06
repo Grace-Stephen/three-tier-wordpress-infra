@@ -70,7 +70,7 @@ module "cloudwatch" {
   source = "../../modules/cloudwatch"
 
   environment               = var.environment
-  instance_ids          = module.ec2.instance_ids
+  ec2_instance_ids          = module.ec2.instance_ids
   alb_arn            = module.alb.alb_arn
   target_group_arn   = module.alb.target_group_arn
   rds_instance_identifier   = module.rds.db_instance_identifier

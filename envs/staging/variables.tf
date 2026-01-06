@@ -89,8 +89,9 @@ variable "subject_alternative_names" {
 }
 
 ######CLOUDWATCH#######
-variable "instance_ids" {
-  type = list(string)
+variable "ec2_instance_ids" {
+  type    = list(string)
+  default = []
 }
 
 
