@@ -2,7 +2,7 @@ variable "environment" {
   type = string
 }
 
-variable "ec2_instance_ids" {
+variable "instance_ids" {
   type = list(string)
 }
 

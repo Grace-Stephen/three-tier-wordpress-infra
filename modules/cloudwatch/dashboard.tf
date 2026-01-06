@@ -9,7 +9,7 @@ resource "aws_cloudwatch_dashboard" "wordpress" {
         height = 6
         properties = {
           metrics = [
-            ["AWS/EC2", "CPUUtilization", "InstanceId", element(var.ec2_instance_ids, 0)]
+            ["AWS/EC2", "CPUUtilization", "InstanceId", element(var.instance_ids, 0)]
           ]
           period = 300
           stat   = "Average"

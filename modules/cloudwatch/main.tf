@@ -6,7 +6,7 @@ locals {
 
 ### EC2 CPU Alarm
 resource "aws_cloudwatch_metric_alarm" "ec2_high_cpu" {
-  for_each = toset(var.ec2_instance_ids)
+  for_each = toset(var.instance_ids)
 
   alarm_name          = "ec2-high-cpu-${each.value}-${var.environment}"
   comparison_operator = "GreaterThanThreshold"
