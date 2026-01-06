@@ -17,20 +17,11 @@ module "iam" {
   ec2_policy_arns = var.ec2_policy_arns
 }
 
-module "rds" {
-  source = "../../modules/rds"
+module "acm" {
+  source = "../../modules/acm"
 
-  environment           = var.environment
-  vpc_id                = module.network.vpc_id
-  private_db_subnet_ids = module.network.private_db_subnet_ids
-
-  app_security_group_id = module.ec2.app_security_group_id
-
-  db_name           = var.db_name
-  db_username       = var.db_username
-  db_password       = var.db_password
-  db_instance_class = var.db_instance_class
-  allocated_storage = var.allocated_storage
+  domain_name               = var.domain_name
+  subject_alternative_names = var.subject_alternative_names
 }
 
 module "ec2" {
@@ -49,6 +40,22 @@ module "ec2" {
   domain_name = var.domain_name
 }
 
+module "rds" {
+  source = "../../modules/rds"
+
+  environment           = var.environment
+  vpc_id                = module.network.vpc_id
+  private_db_subnet_ids = module.network.private_db_subnet_ids
+
+  app_security_group_id = module.ec2.app_security_group_id
+
+  db_name           = var.db_name
+  db_username       = var.db_username
+  db_password       = var.db_password
+  db_instance_class = var.db_instance_class
+  allocated_storage = var.allocated_storage
+}
+
 module "alb" {
   source = "../../modules/alb"
 
@@ -59,12 +66,6 @@ module "alb" {
   certificate_arn = module.acm.certificate_arn
 }
 
-module "acm" {
-  source = "../../modules/acm"
-
-  domain_name               = var.domain_name
-  subject_alternative_names = var.subject_alternative_names
-}
 
 module "cloudwatch" {
   source = "../../modules/cloudwatch"
