@@ -22,7 +22,7 @@ resource "aws_cloudwatch_dashboard" "wordpress" {
         height = 6
         properties = {
           metrics = [
-            ["AWS/ApplicationELB", "UnHealthyHostCount", "LoadBalancer", var.alb_arn_suffix, "TargetGroup", var.target_group_arn_suffix]
+            ["AWS/ApplicationELB", "UnHealthyHostCount", "LoadBalancer", var.alb_arn, "TargetGroup", var.target_group_arn]
           ]
           period = 60
           stat   = "Average"

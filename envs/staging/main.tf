@@ -71,7 +71,7 @@ module "cloudwatch" {
 
   environment               = var.environment
   ec2_instance_ids          = module.ec2.instance_ids
-  alb_arn_suffix            = module.alb.alb_arn_suffix
-  target_group_arn_suffix   = module.alb.target_group_arn_suffix
+  alb_arn            = module.alb.alb_arn
+  target_group_arn   = module.alb.target_group_arn
   rds_instance_identifier   = module.rds.db_instance_identifier
 }

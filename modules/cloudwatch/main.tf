@@ -1,3 +1,9 @@
+locals {
+  alb_arn_suffix = regex("loadbalancer/(.*)", var.alb_arn)[0]
+  target_group_arn_suffix = regex("targetgroup/(.*)", var.target_group_arn)[0]
+}
+
+
 ### EC2 CPU Alarm
 resource "aws_cloudwatch_metric_alarm" "ec2_high_cpu" {
   for_each = toset(var.ec2_instance_ids)
@@ -28,7 +34,7 @@ resource "aws_cloudwatch_metric_alarm" "alb_5xx_errors" {
   threshold           = 5
 
   dimensions = {
-    LoadBalancer = var.alb_arn_suffix
+    LoadBalancer = local.alb_arn_suffix
   }
 }
 
@@ -44,7 +50,7 @@ resource "aws_cloudwatch_metric_alarm" "unhealthy_targets" {
   threshold           = 0
 
   dimensions = {
-    TargetGroup = var.target_group_arn_suffix
+    TargetGroup = local.target_group_arn_suffix
   }
 }
 
