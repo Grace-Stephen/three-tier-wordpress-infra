@@ -36,7 +36,12 @@ jobs:
         working-directory: envs/production
 
       - name: Terraform Plan
-        run: terraform plan
+        run: terraform plan \
+             -target=module.network \
+             -target=module.iam \
+             -target=module.rds \
+             -target=module.ec2 \
+             -target=module.alb 
         working-directory: envs/production
         env:
           TF_VAR_db_password: ${{ secrets.DB_PASSWORD_PROD }}
