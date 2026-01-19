@@ -13,7 +13,7 @@ resource "aws_db_subnet_group" "this" {
 
 ###########################
 # RDS Security Group
-#########################
+##########################
 resource "aws_security_group" "db" {
   name        = "wp-${var.environment}-db-sg"
   description = "Allow MySQL access from application layer"
