@@ -36,7 +36,7 @@ jobs:
 
       # Step 1: Apply resources that CloudWatch depends on (ALB, Target Groups, EC2, RDS)
       - name: Terraform Apply Dependencies
-        run: terraform apply -auto-approve -target=module.alb -target=module.ec2 -target=module.rds
+        run: terraform apply -auto-approve -target=module.network -target=module.alb -target=module.ec2 -target=module.rds
         working-directory: envs/production
         env:
           TF_VAR_db_password: ${{ secrets.DB_PASSWORD_PROD }}
