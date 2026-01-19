@@ -1,9 +1,20 @@
 locals {
-  alb_arn_suffix          = var.alb_arn != "" ? replace(var.alb_arn, "arn:aws:elasticloadbalancing:us-east-1:[0-9]+:loadbalancer/", "") : null
-  target_group_arn_suffix = var.target_group_arn != "" ? replace(var.target_group_arn, "arn:aws:elasticloadbalancing:us-east-1:[0-9]+:", "") : null
+  alb_arn_suffix = var.alb_arn != "" ? replace(
+    var.alb_arn,
+    "arn:aws:elasticloadbalancing:us-east-1:[0-9]+:loadbalancer/",
+    ""
+  ) : ""
+
+  target_group_arn_suffix = var.target_group_arn != "" ? replace(
+    var.target_group_arn,
+    "arn:aws:elasticloadbalancing:us-east-1:[0-9]+:",
+    ""
+  ) : ""
 }
 
-### EC2 CPU Alarms
+
+
+#### EC2 CPU Alarms
 resource "aws_cloudwatch_metric_alarm" "ec2_high_cpu" {
   for_each = toset(compact(var.app_instance_ids))
 
@@ -23,7 +34,7 @@ resource "aws_cloudwatch_metric_alarm" "ec2_high_cpu" {
 
 ### ALB 5XX Errors Alarm
 resource "aws_cloudwatch_metric_alarm" "alb_5xx_errors" {
-  for_each = var.alb_arn != "" ? { "alarm" = var.alb_arn } : {}
+  count = var.alb_arn != "" ? 1 : 0
 
   alarm_name          = "alb-5xx-errors-${var.environment}"
   comparison_operator = "GreaterThanThreshold"
@@ -41,7 +52,7 @@ resource "aws_cloudwatch_metric_alarm" "alb_5xx_errors" {
 
 ### Target Group Unhealthy Hosts Alarm
 resource "aws_cloudwatch_metric_alarm" "unhealthy_targets" {
-  for_each = var.target_group_arn != "" && var.alb_arn != "" ? { "alarm" = var.target_group_arn } : {}
+  count = var.target_group_arn != "" ? 1 : 0
 
   alarm_name          = "unhealthy-targets-${var.environment}"
   comparison_operator = "GreaterThanThreshold"
@@ -53,13 +64,13 @@ resource "aws_cloudwatch_metric_alarm" "unhealthy_targets" {
   threshold           = 0
 
   dimensions = {
-    TargetGroup  = local.target_group_arn_suffix
+    TargetGroup = local.target_group_arn_suffix
     LoadBalancer = local.alb_arn_suffix
   }
 }
 
 resource "aws_cloudwatch_metric_alarm" "alb_no_healthy_targets" {
-  for_each = var.target_group_arn != "" && var.alb_arn != "" ? { "alarm" = var.target_group_arn } : {}
+  count = var.target_group_arn != "" ? 1 : 0
 
   alarm_name          = "alb-no-healthy-targets-${var.environment}"
   comparison_operator = "LessThanThreshold"
@@ -77,7 +88,7 @@ resource "aws_cloudwatch_metric_alarm" "alb_no_healthy_targets" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "alb_high_latency" {
-  for_each = var.alb_arn != "" ? { "alarm" = var.alb_arn } : {}
+  count = var.alb_arn != "" ? 1 : 0
 
   alarm_name          = "alb-high-latency-${var.environment}"
   comparison_operator = "GreaterThanThreshold"
@@ -93,9 +104,10 @@ resource "aws_cloudwatch_metric_alarm" "alb_high_latency" {
   }
 }
 
-### RDS Alarms
+
+### RDS CPU Alarm
 resource "aws_cloudwatch_metric_alarm" "rds_cpu_high" {
-  for_each = var.db_instance_identifier != "" ? { "alarm" = var.db_instance_identifier } : {}
+  count = var.db_instance_identifier != "" ? 1 : 0
 
   alarm_name          = "rds-high-cpu-${var.environment}"
   comparison_operator = "GreaterThanThreshold"
@@ -112,7 +124,7 @@ resource "aws_cloudwatch_metric_alarm" "rds_cpu_high" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "rds_low_storage" {
-  for_each = var.db_instance_identifier != "" ? { "alarm" = var.db_instance_identifier } : {}
+  count = var.db_instance_identifier != "" ? 1 : 0
 
   alarm_name          = "rds-low-storage-${var.environment}"
   comparison_operator = "LessThanThreshold"
@@ -127,3 +139,4 @@ resource "aws_cloudwatch_metric_alarm" "rds_low_storage" {
     DBInstanceIdentifier = var.db_instance_identifier
   }
 }
+
