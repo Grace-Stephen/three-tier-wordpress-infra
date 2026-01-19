@@ -17,12 +17,12 @@ module "iam" {
   ec2_policy_arns = var.ec2_policy_arns
 }
 
-module "acm" {
-  source = "../../modules/acm"
+# module "acm" {
+#   source = "../../modules/acm"
 
-  domain_name               = var.domain_name
-  subject_alternative_names = var.subject_alternative_names
-}
+#   domain_name               = var.domain_name
+#   subject_alternative_names = var.subject_alternative_names
+# }
 
 module "ec2" {
   source = "../../modules/ec2"
@@ -62,8 +62,8 @@ module "alb" {
   environment       = var.environment
   vpc_id            = module.network.vpc_id
   public_subnet_ids = module.network.public_subnet_ids
-  app_instance_ids  = module.ec2.instance_ids
-  certificate_arn = module.acm.certificate_arn
+  app_instance_ids  = module.ec2.app_instance_ids
+  certificate_arn = data.terraform_remote_state.dns.outputs.certificate_arns["staging"]
 }
 
 
@@ -71,7 +71,8 @@ module "alb" {
 #   source = "../../modules/cloudwatch"
 
 #   environment               = var.environment
-#   instance_ids          = module.ec2.instance_ids
+#   aws_region             = var.aws_region
+#   app_instance_ids          = module.ec2.app_instance_ids
 #   alb_arn            = module.alb.alb_arn
 #   target_group_arn   = module.alb.target_group_arn
 #   db_instance_identifier   = module.rds.db_instance_identifier

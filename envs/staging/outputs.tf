@@ -56,9 +56,12 @@ output "db_port" {
   value       = module.rds.db_port
 }
 
+output "db_instance_identifier" {
+  value = module.rds.db_instance_identifier
+}
 # --- EC2 Outputs ---
 output "app_instance_ids" {
-  value = module.ec2.instance_ids
+  value = module.ec2.app_instance_ids
 }
 
 output "app_private_ips" {
@@ -70,11 +73,19 @@ output "alb_dns_name" {
   value = module.alb.alb_dns_name
 }
 
-# --- ACM Outputs ---
-output "acm_validation_records" {
-  value = module.acm.acm_validation_records
+output "alb_zone_id" {
+  value = module.alb.alb_zone_id
 }
 
-output "certificate_arn" {
-  value = module.acm.certificate_arn
+output "target_group_arn" {
+  value = module.alb.target_group_arn
 }
+
+# --- ACM Outputs ---
+# output "acm_validation_records" {
+#   value = module.acm.acm_validation_records
+# }
+
+# output "certificate_arn" {
+#   value = module.acm.certificate_arn
+# }

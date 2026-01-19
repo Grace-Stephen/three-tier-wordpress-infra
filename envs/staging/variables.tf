@@ -74,6 +74,7 @@ variable "allocated_storage" {
   default = 20
 }
 
+
 ######EC2########
 variable "instance_type" {
   type = string
@@ -89,13 +90,16 @@ variable "subject_alternative_names" {
 }
 
 ######CLOUDWATCH#######
-# variable "instance_ids" {
+# variable "app_instance_ids" {
 #   type    = list(string)
+#   default     = []
 # }
 
 
 # variable "db_instance_identifier" {
 #   type = string
+#   description = "RDS DB instance identifier"
+#   default     = "" 
 # }
 
 # variable "cpu_utilization_threshold" {
@@ -114,5 +118,17 @@ variable "subject_alternative_names" {
 #   description = "Period (in seconds) over which the metric is evaluated"
 #   type        = number
 #   default     = 300
+# }
+
+# variable "alb_arn" {
+#   type        = string
+#   description = "The ARN of the ALB to monitor"
+#   default     = ""
+# }
+
+# variable "target_group_arn" {
+#   type        = string
+#   description = "The ARN of the target group to monitor"
+#   default     = ""
 # }
 
