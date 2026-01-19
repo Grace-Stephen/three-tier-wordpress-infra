@@ -33,6 +33,12 @@ jobs:
         run: terraform init
         working-directory: envs/dns
 
-      - name: Terraform Apply
-        run: terraform apply -auto-approve
+    #   - name: Terraform Apply
+    #     run: terraform apply -auto-approve
+    #     working-directory: envs/dns
+
+
+    # Destroyed DNS to stop AWS billing, this block should never be included 
+      - name: Terraform Destroy
+        run: terraform destroy -auto-approve
         working-directory: envs/dns
