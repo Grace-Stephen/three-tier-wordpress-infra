@@ -32,3 +32,9 @@ variable "target_group_arn" {
   description = "The ARN of the ALB target group"
   default     = ""          
 }
+
+variable "depends_on_resources" {
+  description = "Resources or modules that CloudWatch should depend on"
+  type        = any
+  default     = []
+}

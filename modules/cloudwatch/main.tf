@@ -29,7 +29,7 @@ resource "aws_cloudwatch_metric_alarm" "ec2_high_cpu" {
     InstanceId = each.value
   }
 
-  depends_on = [module.ec2] # ensure EC2 is created first
+  depends_on = var.depends_on_resources
 }
 
 ### ALB 5XX Errors Alarm ###
@@ -49,7 +49,7 @@ resource "aws_cloudwatch_metric_alarm" "alb_5xx_errors" {
     LoadBalancer = replace(each.value, "arn:aws:elasticloadbalancing:us-east-1:[0-9]+:loadbalancer/", "")
   }
 
-  depends_on = [module.alb]
+  depends_on = var.depends_on_resources
 }
 
 ### Target Group Unhealthy Hosts Alarm ###
@@ -70,7 +70,7 @@ resource "aws_cloudwatch_metric_alarm" "unhealthy_targets" {
     LoadBalancer = replace(var.alb_arn, "arn:aws:elasticloadbalancing:us-east-1:[0-9]+:loadbalancer/", "")
   }
 
-  depends_on = [module.alb]
+  depends_on = var.depends_on_resources
 }
 
 ### ALB No Healthy Targets Alarm ###
@@ -91,7 +91,7 @@ resource "aws_cloudwatch_metric_alarm" "alb_no_healthy_targets" {
     LoadBalancer = replace(var.alb_arn, "arn:aws:elasticloadbalancing:us-east-1:[0-9]+:loadbalancer/", "")
   }
 
-  depends_on = [module.alb]
+  depends_on = var.depends_on_resources
 }
 
 ### ALB High Latency Alarm ###
@@ -111,7 +111,7 @@ resource "aws_cloudwatch_metric_alarm" "alb_high_latency" {
     LoadBalancer = replace(each.value, "arn:aws:elasticloadbalancing:us-east-1:[0-9]+:loadbalancer/", "")
   }
 
-  depends_on = [module.alb]
+  depends_on = var.depends_on_resources
 }
 
 ### RDS CPU Alarm ###
@@ -131,7 +131,7 @@ resource "aws_cloudwatch_metric_alarm" "rds_cpu_high" {
     DBInstanceIdentifier = var.db_instance_identifier
   }
 
-  depends_on = [module.rds]
+  depends_on = var.depends_on_resources
 }
 
 resource "aws_cloudwatch_metric_alarm" "rds_low_storage" {
@@ -150,5 +150,5 @@ resource "aws_cloudwatch_metric_alarm" "rds_low_storage" {
     DBInstanceIdentifier = var.db_instance_identifier
   }
 
-  depends_on = [module.rds]
+  depends_on = var.depends_on_resources
 }
