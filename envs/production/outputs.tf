@@ -76,6 +76,14 @@ output "alb_security_group_id" {
   value = module.alb.alb_security_group_id
 }
 
+output "target_group_arn" {
+  value = module.alb.target_group_arn
+}
+
+output "alb_arn" {
+  value = module.alb.alb_arn
+}
+
 
 # # --- ACM Outputs ---
 # output "acm_validation_records" {

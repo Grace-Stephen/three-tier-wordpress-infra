@@ -1,40 +1,28 @@
-### Locals for static keys ###
 locals {
-  # EC2 alarms: keys are static indices
-  ec2_alarms = { for idx, id in var.app_instance_ids : idx => id if id != "" }
-
-  # ALB alarms: keys are static, values can be unknown at apply
-  alb_alarms = {
-    "5xx_errors"        = var.alb_arn
-    "high_latency"      = var.alb_arn
-    "unhealthy_targets" = var.target_group_arn
-    "no_healthy_targets"= var.target_group_arn
-  }
+  alb_arn_suffix = var.alb_arn != "" ? replace(var.alb_arn, "arn:aws:elasticloadbalancing:.*:loadbalancer/", "") : ""
+  target_group_arn_suffix = var.target_group_arn != "" ? replace(var.target_group_arn, "arn:aws:elasticloadbalancing:.*:", "") : ""
 }
 
-### EC2 CPU Alarms ###
+# EC2 CPU alarms
 resource "aws_cloudwatch_metric_alarm" "ec2_high_cpu" {
-  for_each = local.ec2_alarms
+  for_each = { for id in var.app_instance_ids : id => id }
 
-  alarm_name          = "ec2-high-cpu-${each.value}-${var.environment}"
+  alarm_name          = "ec2-high-cpu-${each.key}-${var.environment}"
   comparison_operator = "GreaterThanThreshold"
   evaluation_periods  = 2
   metric_name         = "CPUUtilization"
   namespace           = "AWS/EC2"
   period              = 60
   statistic           = "Average"
-  threshold           = 80
 
   dimensions = {
-    InstanceId = each.value
+    InstanceId = each.key
   }
-
-  depends_on = var.depends_on_resources
 }
 
-### ALB 5XX Errors Alarm ###
+# ALB 5XX errors alarm
 resource "aws_cloudwatch_metric_alarm" "alb_5xx_errors" {
-  for_each = { for k, v in local.alb_alarms : k => v if k == "5xx_errors" && v != "" }
+  for_each = var.alb_arn != "" ? { "alarm" = var.alb_arn } : {}
 
   alarm_name          = "alb-5xx-errors-${var.environment}"
   comparison_operator = "GreaterThanThreshold"
@@ -43,18 +31,15 @@ resource "aws_cloudwatch_metric_alarm" "alb_5xx_errors" {
   namespace           = "AWS/ApplicationELB"
   period              = 60
   statistic           = "Sum"
-  threshold           = 1
 
   dimensions = {
-    LoadBalancer = replace(each.value, "arn:aws:elasticloadbalancing:us-east-1:[0-9]+:loadbalancer/", "")
+    LoadBalancer = local.alb_arn_suffix
   }
-
-  depends_on = var.depends_on_resources
 }
 
-### Target Group Unhealthy Hosts Alarm ###
+# Target group unhealthy hosts alarm
 resource "aws_cloudwatch_metric_alarm" "unhealthy_targets" {
-  for_each = { for k, v in local.alb_alarms : k => v if k == "unhealthy_targets" && v != "" }
+  for_each = (var.target_group_arn != "" && var.alb_arn != "") ? { "alarm" = var.target_group_arn } : {}
 
   alarm_name          = "unhealthy-targets-${var.environment}"
   comparison_operator = "GreaterThanThreshold"
@@ -63,19 +48,16 @@ resource "aws_cloudwatch_metric_alarm" "unhealthy_targets" {
   namespace           = "AWS/ApplicationELB"
   period              = 60
   statistic           = "Average"
-  threshold           = 0
 
   dimensions = {
-    TargetGroup  = replace(each.value, "arn:aws:elasticloadbalancing:us-east-1:[0-9]+:", "")
-    LoadBalancer = replace(var.alb_arn, "arn:aws:elasticloadbalancing:us-east-1:[0-9]+:loadbalancer/", "")
+    TargetGroup  = local.target_group_arn_suffix
+    LoadBalancer = local.alb_arn_suffix
   }
-
-  depends_on = var.depends_on_resources
 }
 
-### ALB No Healthy Targets Alarm ###
+# ALB no healthy targets alarm
 resource "aws_cloudwatch_metric_alarm" "alb_no_healthy_targets" {
-  for_each = { for k, v in local.alb_alarms : k => v if k == "no_healthy_targets" && v != "" }
+  for_each = (var.target_group_arn != "" && var.alb_arn != "") ? { "alarm" = var.target_group_arn } : {}
 
   alarm_name          = "alb-no-healthy-targets-${var.environment}"
   comparison_operator = "LessThanThreshold"
@@ -84,19 +66,16 @@ resource "aws_cloudwatch_metric_alarm" "alb_no_healthy_targets" {
   namespace           = "AWS/ApplicationELB"
   period              = 60
   statistic           = "Average"
-  threshold           = 1
 
   dimensions = {
-    TargetGroup  = replace(each.value, "arn:aws:elasticloadbalancing:us-east-1:[0-9]+:", "")
-    LoadBalancer = replace(var.alb_arn, "arn:aws:elasticloadbalancing:us-east-1:[0-9]+:loadbalancer/", "")
+    TargetGroup  = local.target_group_arn_suffix
+    LoadBalancer = local.alb_arn_suffix
   }
-
-  depends_on = var.depends_on_resources
 }
 
-### ALB High Latency Alarm ###
+# ALB high latency alarm
 resource "aws_cloudwatch_metric_alarm" "alb_high_latency" {
-  for_each = { for k, v in local.alb_alarms : k => v if k == "high_latency" && v != "" }
+  for_each = var.alb_arn != "" ? { "alarm" = var.alb_arn } : {}
 
   alarm_name          = "alb-high-latency-${var.environment}"
   comparison_operator = "GreaterThanThreshold"
@@ -105,18 +84,15 @@ resource "aws_cloudwatch_metric_alarm" "alb_high_latency" {
   namespace           = "AWS/ApplicationELB"
   period              = 60
   statistic           = "Average"
-  threshold           = 3
 
   dimensions = {
-    LoadBalancer = replace(each.value, "arn:aws:elasticloadbalancing:us-east-1:[0-9]+:loadbalancer/", "")
+    LoadBalancer = local.alb_arn_suffix
   }
-
-  depends_on = var.depends_on_resources
 }
 
-### RDS CPU Alarm ###
+# RDS CPU alarm
 resource "aws_cloudwatch_metric_alarm" "rds_cpu_high" {
-  count = var.db_instance_identifier != "" ? 1 : 0
+  for_each = var.db_instance_identifier != "" ? { "alarm" = var.db_instance_identifier } : {}
 
   alarm_name          = "rds-high-cpu-${var.environment}"
   comparison_operator = "GreaterThanThreshold"
@@ -125,17 +101,15 @@ resource "aws_cloudwatch_metric_alarm" "rds_cpu_high" {
   namespace           = "AWS/RDS"
   period              = 60
   statistic           = "Average"
-  threshold           = 75
 
   dimensions = {
-    DBInstanceIdentifier = var.db_instance_identifier
+    DBInstanceIdentifier = each.value
   }
-
-  depends_on = var.depends_on_resources
 }
 
+# RDS low storage alarm
 resource "aws_cloudwatch_metric_alarm" "rds_low_storage" {
-  count = var.db_instance_identifier != "" ? 1 : 0
+  for_each = var.db_instance_identifier != "" ? { "alarm" = var.db_instance_identifier } : {}
 
   alarm_name          = "rds-low-storage-${var.environment}"
   comparison_operator = "LessThanThreshold"
@@ -144,11 +118,9 @@ resource "aws_cloudwatch_metric_alarm" "rds_low_storage" {
   namespace           = "AWS/RDS"
   period              = 300
   statistic           = "Average"
-  threshold           = 2147483648 # 2 GB
+  threshold           = 2147483648
 
   dimensions = {
-    DBInstanceIdentifier = var.db_instance_identifier
+    DBInstanceIdentifier = each.value
   }
-
-  depends_on = var.depends_on_resources
 }
