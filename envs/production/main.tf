@@ -69,4 +69,11 @@ module "cloudwatch" {
   alb_arn                = module.alb.alb_arn
   target_group_arn       = module.alb.target_group_arn
   db_instance_identifier = module.rds.db_instance_identifier
+
+  depends_on = [
+    module.ec2,
+    module.alb,
+    module.rds
+  ]
 }
+
