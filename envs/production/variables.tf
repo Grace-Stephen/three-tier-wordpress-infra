@@ -4,7 +4,7 @@ variable "aws_region" {
   default     = "us-east-1"
 }
 
-####### NETWORK ################
+####### NETWORK #################
 variable "environment" {
   default = "prod"
 }
@@ -37,7 +37,7 @@ variable "ec2_role_name" {
 }
 
 variable "instance_profile_name" {
-  type = string
+  type    = string
   default = "ec2_profile_prod"
 }
 
@@ -79,7 +79,6 @@ variable "instance_type" {
   type = string
 }
 
-
 ######ACM########
 variable "domain_name" {
   type = string
@@ -89,5 +88,31 @@ variable "subject_alternative_names" {
   type = list(string)
 }
 
-#
+######CLOUDWATCH#######
+# variable "instance_ids" {
+#   type    = list(string)
+# }
+
+
+# variable "db_instance_identifier" {
+#   type = string
+# }
+
+# variable "cpu_utilization_threshold" {
+#   description = "CPU utilization percentage that triggers alarm"
+#   type        = number
+#   default     = 80
+# }
+
+# variable "alarm_evaluation_periods" {
+#   description = "Number of periods to evaluate before triggering alarm"
+#   type        = number
+#   default     = 2
+# }
+
+# variable "alarm_period" {
+#   description = "Period (in seconds) over which the metric is evaluated"
+#   type        = number
+#   default     = 300
+# }
 
