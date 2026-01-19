@@ -22,7 +22,7 @@ resource "aws_cloudwatch_metric_alarm" "ec2_high_cpu" {
 
 # ALB 5XX errors alarm
 resource "aws_cloudwatch_metric_alarm" "alb_5xx_errors" {
-  for_each = var.alb_arn != "" ? { "alarm" = var.alb_arn } : {}
+  count = var.alb_arn != "" ? 1 : 0
 
   alarm_name          = "alb-5xx-errors-${var.environment}"
   comparison_operator = "GreaterThanThreshold"
@@ -31,15 +31,33 @@ resource "aws_cloudwatch_metric_alarm" "alb_5xx_errors" {
   namespace           = "AWS/ApplicationELB"
   period              = 60
   statistic           = "Sum"
+  threshold           = 1
 
   dimensions = {
     LoadBalancer = local.alb_arn_suffix
   }
 }
 
-# Target group unhealthy hosts alarm
+# ALB high latency alarm
+resource "aws_cloudwatch_metric_alarm" "alb_high_latency" {
+  count = var.alb_arn != "" ? 1 : 0
+
+  alarm_name          = "alb-high-latency-${var.environment}"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 2
+  metric_name         = "TargetResponseTime"
+  namespace           = "AWS/ApplicationELB"
+  period              = 60
+  statistic           = "Average"
+
+  dimensions = {
+    LoadBalancer = local.alb_arn_suffix
+  }
+}
+
+# Target Group unhealthy hosts alarm
 resource "aws_cloudwatch_metric_alarm" "unhealthy_targets" {
-  for_each = (var.target_group_arn != "" && var.alb_arn != "") ? { "alarm" = var.target_group_arn } : {}
+  count = (var.target_group_arn != "" && var.alb_arn != "") ? 1 : 0
 
   alarm_name          = "unhealthy-targets-${var.environment}"
   comparison_operator = "GreaterThanThreshold"
@@ -55,9 +73,9 @@ resource "aws_cloudwatch_metric_alarm" "unhealthy_targets" {
   }
 }
 
-# ALB no healthy targets alarm
+# Target Group healthy hosts alarm
 resource "aws_cloudwatch_metric_alarm" "alb_no_healthy_targets" {
-  for_each = (var.target_group_arn != "" && var.alb_arn != "") ? { "alarm" = var.target_group_arn } : {}
+  count = (var.target_group_arn != "" && var.alb_arn != "") ? 1 : 0
 
   alarm_name          = "alb-no-healthy-targets-${var.environment}"
   comparison_operator = "LessThanThreshold"
@@ -73,22 +91,6 @@ resource "aws_cloudwatch_metric_alarm" "alb_no_healthy_targets" {
   }
 }
 
-# ALB high latency alarm
-resource "aws_cloudwatch_metric_alarm" "alb_high_latency" {
-  for_each = var.alb_arn != "" ? { "alarm" = var.alb_arn } : {}
-
-  alarm_name          = "alb-high-latency-${var.environment}"
-  comparison_operator = "GreaterThanThreshold"
-  evaluation_periods  = 2
-  metric_name         = "TargetResponseTime"
-  namespace           = "AWS/ApplicationELB"
-  period              = 60
-  statistic           = "Average"
-
-  dimensions = {
-    LoadBalancer = local.alb_arn_suffix
-  }
-}
 
 # RDS CPU alarm
 resource "aws_cloudwatch_metric_alarm" "rds_cpu_high" {
