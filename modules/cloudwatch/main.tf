@@ -1,22 +1,20 @@
+### Locals for static keys ###
 locals {
-  alb_arn_suffix = var.alb_arn != "" ? replace(
-    var.alb_arn,
-    "arn:aws:elasticloadbalancing:us-east-1:[0-9]+:loadbalancer/",
-    ""
-  ) : ""
+  # EC2 alarms: keys are static indices
+  ec2_alarms = { for idx, id in var.app_instance_ids : idx => id if id != "" }
 
-  target_group_arn_suffix = var.target_group_arn != "" ? replace(
-    var.target_group_arn,
-    "arn:aws:elasticloadbalancing:us-east-1:[0-9]+:",
-    ""
-  ) : ""
+  # ALB alarms: keys are static, values can be unknown at apply
+  alb_alarms = {
+    "5xx_errors"        = var.alb_arn
+    "high_latency"      = var.alb_arn
+    "unhealthy_targets" = var.target_group_arn
+    "no_healthy_targets"= var.target_group_arn
+  }
 }
 
-
-
-#### EC2 CPU Alarms
+### EC2 CPU Alarms ###
 resource "aws_cloudwatch_metric_alarm" "ec2_high_cpu" {
-  for_each = toset(compact(var.app_instance_ids))
+  for_each = local.ec2_alarms
 
   alarm_name          = "ec2-high-cpu-${each.value}-${var.environment}"
   comparison_operator = "GreaterThanThreshold"
@@ -30,11 +28,13 @@ resource "aws_cloudwatch_metric_alarm" "ec2_high_cpu" {
   dimensions = {
     InstanceId = each.value
   }
+
+  depends_on = [module.ec2] # ensure EC2 is created first
 }
 
-### ALB 5XX Errors Alarm
+### ALB 5XX Errors Alarm ###
 resource "aws_cloudwatch_metric_alarm" "alb_5xx_errors" {
-  count = var.alb_arn != "" ? 1 : 0
+  for_each = { for k, v in local.alb_alarms : k => v if k == "5xx_errors" && v != "" }
 
   alarm_name          = "alb-5xx-errors-${var.environment}"
   comparison_operator = "GreaterThanThreshold"
@@ -46,13 +46,15 @@ resource "aws_cloudwatch_metric_alarm" "alb_5xx_errors" {
   threshold           = 1
 
   dimensions = {
-    LoadBalancer = local.alb_arn_suffix
+    LoadBalancer = replace(each.value, "arn:aws:elasticloadbalancing:us-east-1:[0-9]+:loadbalancer/", "")
   }
+
+  depends_on = [module.alb]
 }
 
-### Target Group Unhealthy Hosts Alarm
+### Target Group Unhealthy Hosts Alarm ###
 resource "aws_cloudwatch_metric_alarm" "unhealthy_targets" {
-  count = var.target_group_arn != "" ? 1 : 0
+  for_each = { for k, v in local.alb_alarms : k => v if k == "unhealthy_targets" && v != "" }
 
   alarm_name          = "unhealthy-targets-${var.environment}"
   comparison_operator = "GreaterThanThreshold"
@@ -64,13 +66,16 @@ resource "aws_cloudwatch_metric_alarm" "unhealthy_targets" {
   threshold           = 0
 
   dimensions = {
-    TargetGroup = local.target_group_arn_suffix
-    LoadBalancer = local.alb_arn_suffix
+    TargetGroup  = replace(each.value, "arn:aws:elasticloadbalancing:us-east-1:[0-9]+:", "")
+    LoadBalancer = replace(var.alb_arn, "arn:aws:elasticloadbalancing:us-east-1:[0-9]+:loadbalancer/", "")
   }
+
+  depends_on = [module.alb]
 }
 
+### ALB No Healthy Targets Alarm ###
 resource "aws_cloudwatch_metric_alarm" "alb_no_healthy_targets" {
-  count = var.target_group_arn != "" ? 1 : 0
+  for_each = { for k, v in local.alb_alarms : k => v if k == "no_healthy_targets" && v != "" }
 
   alarm_name          = "alb-no-healthy-targets-${var.environment}"
   comparison_operator = "LessThanThreshold"
@@ -82,13 +87,16 @@ resource "aws_cloudwatch_metric_alarm" "alb_no_healthy_targets" {
   threshold           = 1
 
   dimensions = {
-    TargetGroup  = local.target_group_arn_suffix
-    LoadBalancer = local.alb_arn_suffix
+    TargetGroup  = replace(each.value, "arn:aws:elasticloadbalancing:us-east-1:[0-9]+:", "")
+    LoadBalancer = replace(var.alb_arn, "arn:aws:elasticloadbalancing:us-east-1:[0-9]+:loadbalancer/", "")
   }
+
+  depends_on = [module.alb]
 }
 
+### ALB High Latency Alarm ###
 resource "aws_cloudwatch_metric_alarm" "alb_high_latency" {
-  count = var.alb_arn != "" ? 1 : 0
+  for_each = { for k, v in local.alb_alarms : k => v if k == "high_latency" && v != "" }
 
   alarm_name          = "alb-high-latency-${var.environment}"
   comparison_operator = "GreaterThanThreshold"
@@ -100,12 +108,13 @@ resource "aws_cloudwatch_metric_alarm" "alb_high_latency" {
   threshold           = 3
 
   dimensions = {
-    LoadBalancer = local.alb_arn_suffix
+    LoadBalancer = replace(each.value, "arn:aws:elasticloadbalancing:us-east-1:[0-9]+:loadbalancer/", "")
   }
+
+  depends_on = [module.alb]
 }
 
-
-### RDS CPU Alarm
+### RDS CPU Alarm ###
 resource "aws_cloudwatch_metric_alarm" "rds_cpu_high" {
   count = var.db_instance_identifier != "" ? 1 : 0
 
@@ -121,6 +130,8 @@ resource "aws_cloudwatch_metric_alarm" "rds_cpu_high" {
   dimensions = {
     DBInstanceIdentifier = var.db_instance_identifier
   }
+
+  depends_on = [module.rds]
 }
 
 resource "aws_cloudwatch_metric_alarm" "rds_low_storage" {
@@ -138,5 +149,6 @@ resource "aws_cloudwatch_metric_alarm" "rds_low_storage" {
   dimensions = {
     DBInstanceIdentifier = var.db_instance_identifier
   }
-}
 
+  depends_on = [module.rds]
+}
